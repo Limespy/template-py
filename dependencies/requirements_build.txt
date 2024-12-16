@@ -1,0 +1,1 @@
+limedev[build] >= 0.6.0
