@@ -5,16 +5,20 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "package"
+name = "template-py"
 description = ""
 classifiers = [
     "Development Status :: 1 - Planning",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: Unix",
-    "Operating System :: POSIX",
     "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 authors = [
     { name = "Limespy" },
@@ -28,15 +32,15 @@ dynamic = [
 ]
 
 [project.scripts]
-package = "package:main"
+template-py = "template_py:main"
 
 [project.urls]
-Homepage = "https://github.com/Limespy/"
-Changelog = "https://github.com/Limespy/package/blob/main/README.md#Changelog"
-"Issue Tracker" = "https://github.com/Limespy/package/issues"
+Homepage = "https://github.com/Limespy/template-py"
+Changelog = "https://github.com/Limespy/template-py/blob/main/README.md#Changelog"
+"Issue Tracker" = "https://github.com/Limespy/template-py/issues"
 
 [tool.limedev]
-full_name = "Package"
+full_name = "Template Py"
 
 [tool.setuptools.dynamic.dependencies]
 file = [

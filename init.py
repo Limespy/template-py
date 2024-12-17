@@ -11,15 +11,20 @@ from pip._internal.cli.main import main as pip
 # ======================================================================
 PATH_REPO = pathlib.Path(__file__).parent
 
-_PATTERN_PYVERSION = r'(?<=(py3|\s3\.))'
+_PATTERN_PYVERSION = r"(?<=(py3|\s3\.))"
 
 DEFAULT_PYVERSION_MIN = '11'
 DEFAULT_PYVERSION_MAX = '14'
 
 PATTERN_PYVERSION_MIN = re.compile(_PATTERN_PYVERSION + DEFAULT_PYVERSION_MIN)
-PATTERN_PYVERSION_MAX = re.compile(_PATTERN_PYVERSION + DEFAULT_PYVERSION_MAX )
-
+PATTERN_PYVERSION_MAX = re.compile(_PATTERN_PYVERSION + DEFAULT_PYVERSION_MAX)
 PATTERN_DISALLOWED = re.compile(r'[^a-z0-9]')
+PATTERN_GH_PYVERSION = re.compile(r"(?<='3.)\d+.(^', )*(?=')")
+class Itersub:
+    def __init__(self, iterable):
+        self.iterable = iter(iterable)
+    def __call__(self, _):
+        return str(next(self.iterable))
 # ======================================================================
 def _init_pyproject(tomli_w: ModuleType,
                     full_name: str,
@@ -29,7 +34,7 @@ def _init_pyproject(tomli_w: ModuleType,
                     pyversion_min: str,
                     pyversion_max: str,
                     version: str,
-                    author: str):
+                    author: str) -> None:
     path_pyproject = PATH_REPO / 'pyproject.toml'
 
     with open(path_pyproject, 'r+b') as f:
@@ -50,7 +55,11 @@ def _init_pyproject(tomli_w: ModuleType,
             authors_config.append(author_info)
 
         # Version
-        project_config['version'] = version
+        if version:
+            project_config['version'] = version
+
+        # Pyversion
+        project_config['requires-python'] = '>=3.' + pyversion_min
 
         # URLs
         url_config: dict[str, str] = project_config['urls']
@@ -60,11 +69,12 @@ def _init_pyproject(tomli_w: ModuleType,
 
         # Classifiers
         classifiers: list[str] = project_config['classifiers']
+        classifiers.sort()
+        index_start = classifiers.index("Programming Language :: Python :: 3 :: Only")
+        del classifiers[index_start+1:]
         for pyversion in range(int(pyversion_min), int(pyversion_max) + 1):
             classifier = f'Programming Language :: Python :: 3.{pyversion}'
-            if classifier not in classifiers:
-                classifiers.append(classifier)
-        classifiers.sort()
+            classifiers.append(classifier)
 
         # Entry points
         scripts: dict[str, str] = project_config['scripts']
@@ -82,7 +92,7 @@ def init_pyproject(full_name: str,
                    pyversion_min: str,
                    pyversion_max: str,
                    version: str,
-                   author: str):
+                   author: str) -> None:
     try:
         import tomli_w
         _init_pyproject(tomli_w,
@@ -110,28 +120,37 @@ def init_pyproject(full_name: str,
         finally:
             pip(['uninstall', 'tomli-w'])
 # ======================================================================
-def init_tox_ini(min_version: str, max_version: str):
+def init_tox_ini(pyversion_min: str, pyversion_max: str) -> None:
     with open(PATH_REPO / 'tox.ini', 'r+') as f:
-        tox_ini_text = f.read()
-        if min_version == DEFAULT_PYVERSION_MIN:
-            if max_version == DEFAULT_PYVERSION_MAX:
-                return
-            else:
-                tox_ini_text = PATTERN_PYVERSION_MAX.sub(max_version,
-                                                         tox_ini_text)
-        else:
-            tox_ini_text = PATTERN_PYVERSION_MIN.sub(min_version, tox_ini_text)
-            if max_version != DEFAULT_PYVERSION_MAX:
-                tox_ini_text = PATTERN_PYVERSION_MAX.sub(max_version,
-                                                         tox_ini_text)
+        text = PATTERN_PYVERSION_MIN.sub(pyversion_min, f.read())
+        text = PATTERN_PYVERSION_MAX.sub(pyversion_max, text)
 
         f.seek(0)
-        f.write(tox_ini_text)
+        f.write(text)
+        f.truncate()
 # ======================================================================
-def init_package(package_name: str):
+def init_gh_actions_tests(pyversion_min: str, pyversion_max: str) -> None:
 
-    path_package = PATH_REPO / 'src' / 'package'
-    path_package.rename(path_package.parent / package_name)
+    path_workflows = PATH_REPO / '.github' / 'workflows'
+
+    with open(path_workflows / 'tests.yaml', 'r+') as f:
+        text = PATTERN_GH_PYVERSION.sub(Itersub((pyversion_min, pyversion_max)),
+                                        f.read(), 2)
+        f.seek(0)
+        f.write(text)
+        f.truncate()
+
+    for workflow in ('publish_main', 'publish_candidate'):
+        with open(path_workflows / (workflow + '.yaml'), 'r+') as f:
+            text = PATTERN_GH_PYVERSION.sub(pyversion_min, f.read())
+            f.seek(0)
+            f.write(text)
+            f.truncate()
+# ======================================================================
+def init_package(package_name: str) -> None:
+    for path in (PATH_REPO / 'src').iterdir():
+        if path.is_dir() and (path / '__init__.py').exists():
+            path.rename(path.parent / package_name)
 # ======================================================================
 def main(args: list[str] = sys.argv[1:]):
 
@@ -140,7 +159,7 @@ def main(args: list[str] = sys.argv[1:]):
               'version': ''}
     for arg in args:
         if arg.startswith('--'):
-            key, _, value = arg.partition('=')
+            key, _, value = arg[2:].partition('=')
             kwargs[key] = value
 
     pyversion_min, _, pyversion_max = kwargs['pyversion'].partition(',')
@@ -150,9 +169,8 @@ def main(args: list[str] = sys.argv[1:]):
     if not pyversion_max:
         pyversion_max = DEFAULT_PYVERSION_MAX
 
-
-    _repo = check_output(('remote', '-v')
-                        ).split(b'@', 1)[1].split(b'.', 1)[0]
+    _repo = check_output(('git', 'remote', '-v')
+                        ).split(b'@', 1)[1].split(b'.git', 1)[0]
     author = _repo.split(b':', 1)[1].split(b'/', 1)[0].decode('utf-8')
 
     repo_remote = 'https://' + _repo.replace(b':', b'/').decode('utf-8')
@@ -169,6 +187,8 @@ def main(args: list[str] = sys.argv[1:]):
                    version = kwargs['version'],
                    author = author)
     init_tox_ini(pyversion_min, pyversion_max)
+    init_gh_actions_tests(pyversion_min, pyversion_max)
+    init_package(package_name)
 # ======================================================================
 if __name__ == '__main__':
     raise SystemExit(main())
