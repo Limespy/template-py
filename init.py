@@ -78,7 +78,7 @@ def _init_pyproject(tomli_w: ModuleType,
 
         # Entry points
         scripts: dict[str, str] = project_config['scripts']
-        scripts.pop('package', '')
+        scripts.pop('template-py', '')
         scripts[pypi_name] = package_name + ':main'
 
         f.seek(0)
@@ -106,8 +106,8 @@ def init_pyproject(full_name: str,
                         author)
     except ModuleNotFoundError:
         try:
-            pip(['install', 'tomli-w'])
-            tomli_w = import_module('tomli-w')
+            pip(['install', 'tomli-w', '-y'])
+            tomli_w = import_module('tomli_w')
             _init_pyproject(tomli_w,
                             full_name,
                             pypi_name,
@@ -118,7 +118,7 @@ def init_pyproject(full_name: str,
                             version,
                             author)
         finally:
-            pip(['uninstall', 'tomli-w'])
+            pip(['uninstall', 'tomli-w', '-y'])
 # ======================================================================
 def init_tox_ini(pyversion_min: str, pyversion_max: str) -> None:
     with open(PATH_REPO / 'tox.ini', 'r+') as f:
