@@ -15,9 +15,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
 ]
 authors = [
     { name = "Limespy" },
@@ -35,8 +32,8 @@ package = "package:main"
 
 [project.urls]
 Homepage = "https://github.com/Limespy/"
-Changelog = "https://github.com/Limespy//blob/main/README.md#Changelog"
-"Issue Tracker" = "https://github.com/Limespy//issues"
+Changelog = "https://github.com/Limespy/package/blob/main/README.md#Changelog"
+"Issue Tracker" = "https://github.com/Limespy/package/issues"
 
 [tool.limedev]
 full_name = "Package"
