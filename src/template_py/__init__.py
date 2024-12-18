@@ -1,5 +1,9 @@
 """Documentation."""
 __version__ = '0.0.1'
+from importlib import import_module
+from typing import TYPE_CHECKING
+from sys import modules as _modules
+
 from ._API import *
 # ======================================================================
 # Hinting types
@@ -10,7 +14,7 @@ if TYPE_CHECKING:
 else:
     ModuleType = object
 # ======================================================================
-_SELF: ModuleType = sys.modules[__package__]
+_SELF: ModuleType = _modules[__package__]
 _DYNAMIC_MODULES = ('subpackage', )
 # ----------------------------------------------------------------------
 def __getattr__(name: str) -> ModuleType:

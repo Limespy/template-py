@@ -1,3 +1,6 @@
 [subrepos]
 required = {}
 optional = {}
+[packages]
+required = []
+optional = {}
