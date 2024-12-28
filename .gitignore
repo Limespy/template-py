@@ -1,6 +1,9 @@
 .*
 !.github
 
+# Utilities
+sandbox*
+
 # CAD
 *.FCStd1
 *.stl
