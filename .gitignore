@@ -1,5 +1,6 @@
 .*
 !.github
+!.pre-commit-config.yaml
 
 # Utilities
 sandbox*
@@ -15,3 +16,4 @@ __pycache__
 # Distribution / packaging
 *.egg-info
 dist/
+build/

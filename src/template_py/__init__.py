@@ -10,16 +10,13 @@ from ._API import *
 if TYPE_CHECKING:
     from types import ModuleType
 
-    from . import subpackage
+    from . import debug
 else:
     ModuleType = object
 # ======================================================================
-_SELF: ModuleType = _modules[__package__]
-_DYNAMIC_MODULES = ('subpackage', )
-# ----------------------------------------------------------------------
 def __getattr__(name: str) -> ModuleType:
-    if name not in _DYNAMIC_MODULES:
+    if name not in ('debug', ):
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
     module = import_module(f'.{name}', __package__)
-    setattr(_SELF, name, module)
+    setattr(_modules[__package__], name, module)
     return module
