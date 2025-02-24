@@ -1,6 +1,6 @@
 import pathlib
 
-import package
+import template_py
 import yamdog as md
 from limedev import readme
 #=======================================================================
@@ -16,12 +16,13 @@ def quick_start() -> md.Document:
 def main(pyproject: readme.PyprojectType) -> md.Document:
 
     name = pyproject['tool']['limedev']['full_name']
+    abbreviation = pyproject['tool']['limedev']['abbreviation']
     semi_description = md.Document([md.Paragraph([
         f'{name} is'
        '.'
     ])])
 
-    return readme.make(package, semi_description,
+    return readme.make(template_py, semi_description,
                        name = name,
-                       abbreviation = 'pkg',
+                       abbreviation = abbreviation,
                        quick_start = quick_start())

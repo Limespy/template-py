@@ -41,6 +41,7 @@ Changelog = "https://github.com/Limespy/template-py/blob/main/README.md#Changelo
 
 [tool.limedev]
 full_name = "Template Py"
+abbreviation = "tpy"
 
 [tool.setuptools.dynamic.dependencies]
 file = [

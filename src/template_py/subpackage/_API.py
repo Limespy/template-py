@@ -1,4 +1,6 @@
 from typing import TYPE_CHECKING
+
+from limedev.CLI import get_main
 # ======================================================================
 # Hinting types
 if TYPE_CHECKING:
@@ -6,5 +8,5 @@ if TYPE_CHECKING:
 else:
     ...
 # ======================================================================
-
+main = get_main(__name__)
 # ======================================================================

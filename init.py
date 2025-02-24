@@ -30,11 +30,13 @@ def _init_pyproject(tomli_w: ModuleType,
                     full_name: str,
                     pypi_name: str,
                     package_name: str,
+                    abbreviation: str,
                     repo_remote: str,
                     pyversion_min: str,
                     pyversion_max: str,
                     version: str,
-                    author: str) -> None:
+                    author: str,
+                    ) -> None:
     path_pyproject = PATH_REPO / 'pyproject.toml'
 
     with open(path_pyproject, 'r+b') as f:
@@ -44,7 +46,9 @@ def _init_pyproject(tomli_w: ModuleType,
 
         # Name
         project_config['name'] = pypi_name
-        pyproject['tool']['limedev']['full_name'] = full_name
+        limedev_config = pyproject['tool']['limedev']
+        limedev_config['full_name'] = full_name
+        limedev_config['abbreviation'] = abbreviation
 
         # Authors
         authors_config: list[dict[str, str]] = project_config['authors']
@@ -89,22 +93,26 @@ def _init_pyproject(tomli_w: ModuleType,
 def init_pyproject(full_name: str,
                    pypi_name: str,
                    package_name: str,
+                   abbreviation: str,
                    repo_remote: str,
                    pyversion_min: str,
                    pyversion_max: str,
                    version: str,
-                   author: str) -> None:
+                   author: str,
+                   ) -> None:
     try:
         import tomli_w
         _init_pyproject(tomli_w,
                         full_name,
                         pypi_name,
                         package_name,
+                        abbreviation,
                         repo_remote,
                         pyversion_min,
                         pyversion_max,
                         version,
-                        author)
+                        author,
+                        )
     except ModuleNotFoundError:
         try:
             pip(['install', 'tomli-w'])
@@ -113,11 +121,13 @@ def init_pyproject(full_name: str,
                             full_name,
                             pypi_name,
                             package_name,
+                            abbreviation,
                             repo_remote,
                             pyversion_min,
                             pyversion_max,
                             version,
-                            author)
+                            author,
+                            )
         finally:
             pip(['uninstall', 'tomli-w', '-y'])
 # ======================================================================
@@ -125,50 +135,88 @@ def init_tox_ini(pyversion_min: str, pyversion_max: str) -> None:
     with open(PATH_REPO / 'tox.ini', 'r+') as f:
         text = PATTERN_PYVERSION_MIN.sub(pyversion_min, f.read())
         text = PATTERN_PYVERSION_MAX.sub(pyversion_max, text)
+        text = PATTERN_GH_PYVERSION.sub(Itersub((pyversion_min, pyversion_max)),
+                                        text, 2)
 
         f.seek(0)
         f.write(text)
         f.truncate()
 # ======================================================================
-def init_gh_actions_tests(pyversion_min: str, pyversion_max: str) -> None:
+def init_gh_actions(pyversion_min: str,
+                    pyversion_max: str,
+                    pyversion_build: str) -> None:
 
     path_workflows = PATH_REPO / '.github' / 'workflows'
 
-    with open(path_workflows / 'tests.yaml', 'r+') as f:
+    with open(path_workflows / '_tests.yaml', 'r+') as f:
         text = PATTERN_GH_PYVERSION.sub(Itersub((pyversion_min, pyversion_max)),
                                         f.read(), 2)
         f.seek(0)
         f.write(text)
         f.truncate()
 
-    for workflow in ('publish_main', 'publish_candidate'):
+    for workflow in ('publish_main',
+                     'publish_candidate',
+                     'verify'):
         with open(path_workflows / (workflow + '.yaml'), 'r+') as f:
-            text = PATTERN_GH_PYVERSION.sub(pyversion_min, f.read())
+            text = PATTERN_GH_PYVERSION.sub(pyversion_build, f.read())
             f.seek(0)
             f.write(text)
             f.truncate()
 # ======================================================================
-def init_package(package_name: str) -> None:
-    for path in (PATH_REPO / 'src').iterdir():
+def init_package(full_name: str,
+                 package_name: str,
+                 ) -> None:
+    path_src = PATH_REPO / 'src'
+    for path in path_src.iterdir():
         if path.is_dir() and (path / '__init__.py').exists():
-            path.rename(path.parent / package_name)
+            new_path = path.rename(path.parent / package_name)
+            try:
+                with open(new_path / '__main__', 'r+') as f:
+                    new_text = f.read().replace('Template Py', full_name, 1)
+                    f.seek(0)
+                    f.write(new_text)
+                    f.truncate()
+            except Exception as exc:
+                print(exc)
+            break
+# ======================================================================
+def init_tests(package_name: str) -> None:
+    for path in (PATH_REPO / 'tests').rglob('*.py'):
+        with open(path, 'r+', encoding = 'utf-8') as f:
+            code = f.read().replace('template_py', package_name)
+            f.seek(0)
+            f.write(code)
+            f.truncate()
+# ======================================================================
+def init_readme(package_name: str) -> None:
+    with open(PATH_REPO / 'readme' / 'readme.py', 'r+') as f:
+        new_text = f.read().replace('template_py', package_name, 1)
+        f.seek(0)
+        f.write(new_text)
+        f.truncate()
 # ======================================================================
 def main(args: list[str] = sys.argv[1:]):
 
     full_name = args.pop(0)
     kwargs = {'pyversion': ',',
-              'version': ''}
+              'version': '',
+              'abbreviation': ''}
     for arg in args:
         if arg.startswith('--'):
             key, _, value = arg[2:].partition('=')
             kwargs[key] = value
 
-    pyversion_min, _, pyversion_max = kwargs['pyversion'].partition(',')
+    (pyversion_min,
+     pyversion_max,
+     *_pyversion_build) = kwargs['pyversion'].split(',')
 
     if not pyversion_min:
         pyversion_min = DEFAULT_PYVERSION_MIN
     if not pyversion_max:
         pyversion_max = DEFAULT_PYVERSION_MAX
+
+    pyversion_build = _pyversion_build[0] if _pyversion_build else pyversion_max
 
     _repo = check_output(('git', 'remote', '-v')
                         ).split(b'@', 1)[1].split(b'.git', 1)[0]
@@ -188,8 +236,10 @@ def main(args: list[str] = sys.argv[1:]):
                    version = kwargs['version'],
                    author = author)
     init_tox_ini(pyversion_min, pyversion_max)
-    init_gh_actions_tests(pyversion_min, pyversion_max)
-    init_package(package_name)
+    init_gh_actions(pyversion_min, pyversion_max, pyversion_build)
+    init_package(full_name, package_name)
+    init_readme(package_name)
+    init_tests(package_name)
 # ======================================================================
 if __name__ == '__main__':
     raise SystemExit(main())

@@ -1,6 +1,14 @@
-from limedev.CLI import get_main
+from typing import TYPE_CHECKING
 # ======================================================================
-def f() -> None:
+# Hinting types
+if TYPE_CHECKING:
+    ...
+else:
     ...
 # ======================================================================
-main = get_main(__name__)
+
+# ======================================================================
+def main():
+    import sys
+    if '--version' in sys.argv:
+        print('Template Py', sys.modules[__package__].__version__)

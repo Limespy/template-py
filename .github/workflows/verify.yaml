@@ -1,30 +1,33 @@
-name: Build and publish package to PyPI
+name: Verify
 
 on:
   push:
+    branches-ignore:
+      - main
+      - release-candidate
+  pull_request:
     branches:
       - main
+  workflow_call:
 
 jobs:
-  tests:
+  functional:
     uses: ./.github/workflows/_tests.yaml
-  build_and_publish:
-    needs: tests
+  packaging:
+    needs: functional
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     steps:
-      - name: Checkout to main
+      - name: Checkout to release-candidate
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: release-candidate
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.14'
-      - name: Install in editable mode
+      - name: Install
         run: pip install .[build]
-      - name: Build
-        run: package
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.9.0
+      - name: Package
+        run: package --no-build

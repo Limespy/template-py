@@ -10,10 +10,10 @@ Package is.
 ## Table of Contents <!-- omit in toc -->
 
 - [Quick start guide](#quick-start-guide)
-    - [The first steps](#the-first-steps)
-        - [Installing](#installing)
-        - [Importing](#importing)
-        - [Example](#example)
+  - [The first steps](#the-first-steps)
+    - [Installing](#installing)
+    - [Importing](#importing)
+    - [Example](#example)
 
 # Quick start guide
 
@@ -37,7 +37,7 @@ Import name is the same as install name, `package`.
 import package
 ```
 
-Since the package is accessed often,  abbreviation `pkg` is used. The abbreviation is used throughout this document.
+Since the package is accessed often, abbreviation `pkg` is used. The abbreviation is used throughout this document.
 
 ```python
 import package as pkg

@@ -1,4 +1,4 @@
-import package
+import template_py
 
 # ======================================================================
 def profile() -> None:

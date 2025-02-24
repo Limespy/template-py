@@ -1,24 +1,15 @@
-name: Tests
-
-on:
-  push:
-    branches-ignore:
-      - main
-      - release-candidate
-  pull_request:
-    branches:
-      - main
-  workflow_call:
+name: Functional tests
 
 jobs:
-  test:
+  tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
         python-version: ['3.11', '3.14']
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
