@@ -1,5 +1,4 @@
 """Documentation."""
-
 from typing import TYPE_CHECKING
 
 from ._API import *
@@ -12,7 +11,7 @@ if TYPE_CHECKING:
 else:
     _ModuleType = object
 # ======================================================================
-def __getattr__(name: str) -> _ModuleType:
+def __getattr__(name: str) -> _ModuleType | str:
     if name in {'subpackage', }:
         from importlib import import_module
         from sys import modules as _modules

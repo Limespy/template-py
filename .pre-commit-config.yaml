@@ -8,8 +8,8 @@ repos:
     -   id: double-quote-string-fixer
     -   id: end-of-file-fixer
         exclude: '.*(.log)|(.csv)'
-    -   id: no-commit-to-branch
-        name: No commits to main or master branch
+#    -   id: no-commit-to-branch
+#        name: No commits to main or master branch
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
         exclude: '.*(.log)|(.csv)'

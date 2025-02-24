@@ -11,7 +11,7 @@ from pip._internal.cli.main import main as pip
 # ======================================================================
 PATH_REPO = pathlib.Path(__file__).parent
 
-_PATTERN_PYVERSION = r"(?<=(py3|\s3\.))"
+_PATTERN_PYVERSION = r'(?<=(py3|\s3\.))'
 
 DEFAULT_PYVERSION_MIN = '11'
 DEFAULT_PYVERSION_MAX = '14'
@@ -196,6 +196,13 @@ def init_readme(package_name: str) -> None:
         f.write(new_text)
         f.truncate()
 # ======================================================================
+def init_pre_commit_config() -> None:
+    with open(PATH_REPO / '.pre-commit-config.yaml', 'r+') as f:
+        new_text = f.read().replace('#', '')
+        f.seek(0)
+        f.write(new_text)
+        f.truncate()
+# ======================================================================
 def main(args: list[str] = sys.argv[1:]):
 
     full_name = args.pop(0)
@@ -218,6 +225,7 @@ def main(args: list[str] = sys.argv[1:]):
 
     pyversion_build = _pyversion_build[0] if _pyversion_build else pyversion_max
 
+
     _repo = check_output(('git', 'remote', '-v')
                         ).split(b'@', 1)[1].split(b'.git', 1)[0]
     author = _repo.split(b':', 1)[1].split(b'/', 1)[0].decode('utf-8')
@@ -230,6 +238,7 @@ def main(args: list[str] = sys.argv[1:]):
     init_pyproject(full_name = full_name,
                    pypi_name = pypi_name,
                    package_name = package_name,
+                   abbreviation = kwargs['abbreviation'],
                    repo_remote = repo_remote,
                    pyversion_min = pyversion_min,
                    pyversion_max = pyversion_max,

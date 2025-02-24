@@ -15,4 +15,3 @@ class Test__init__:
         from subprocess import check_output
         out = check_output(('template_py', '--version'))
         assert out
-        
