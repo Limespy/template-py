@@ -70,7 +70,8 @@ def _init_pyproject(tomli_w: ModuleType,
         # Classifiers
         classifiers: list[str] = project_config['classifiers']
         classifiers.sort()
-        index_start = classifiers.index("Programming Language :: Python :: 3 :: Only")
+        index_start = classifiers.index(
+            'Programming Language :: Python :: 3 :: Only')
         del classifiers[index_start+1:]
         for pyversion in range(int(pyversion_min), int(pyversion_max) + 1):
             classifier = f'Programming Language :: Python :: 3.{pyversion}'

@@ -10,13 +10,13 @@ from ._API import *
 if TYPE_CHECKING:
     from types import ModuleType
 
-    from . import debug
+    from . import subpackage
 else:
     ModuleType = object
 # ======================================================================
 def __getattr__(name: str) -> ModuleType:
-    if name not in ('debug', ):
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-    module = import_module(f'.{name}', __package__)
-    setattr(_modules[__package__], name, module)
-    return module
+    if name in {'subpackage', }:
+        module = import_module(f'.{name}', __package__)
+        setattr(_modules[__package__], name, module)
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
