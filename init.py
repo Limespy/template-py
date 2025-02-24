@@ -106,7 +106,7 @@ def init_pyproject(full_name: str,
                         author)
     except ModuleNotFoundError:
         try:
-            pip(['install', 'tomli-w', '-y'])
+            pip(['install', 'tomli-w'])
             tomli_w = import_module('tomli_w')
             _init_pyproject(tomli_w,
                             full_name,
